@@ -12,6 +12,7 @@ A powerful library to handle large file downloads with support for multiple runt
 - **Chunked Downloads**: Downloads files in configurable chunk sizes to handle large files efficiently.
 - **Retry Mechanism**: Automatically retries failed chunks with customizable timeout and retry limits.
 - **Custom Callbacks**: Receive progress and speed updates via a callback.
+- **Flexible Configuration**: Allows fine-tuning of options such as HTTP method, headers, and body data.
 
 ---
 
@@ -26,11 +27,18 @@ npm i --save @rabbit-company/downloader
 ```js
 import { Downloader } from "@rabbit-company/downloader";
 
-const downloader = new Downloader(
-	"https://example.com/large-file.zip", // URL of the file
-	"./downloads/large-file.zip", // Local destination path
-	10 * 1024 * 1024 // Optional: Chunk size (10 MB default)
-);
+const downloader = new Downloader({
+	url: "https://example.com/large-file.zip", // URL of the file
+	destinationPath: "./downloads/large-file.zip", // Local destination path
+	chunkSize: 10 * 1024 * 1024, // Optional: Chunk size (defaults to 10 MB)
+	method: HttpMethod.GET, // Optional: HTTP method (defaults to GET)
+	retryTimeout: 5000, // Optional: Time to wait before retrying a failed request (default: 5000 ms)
+	maxRetries: 120, // Optional: Maximum retries for failed chunks (default: 120)
+	headers: {
+		Authorization: "Bearer YOUR_AUTH_TOKEN", // Optional: Custom headers (e.g., for authentication)
+	},
+	body: JSON.stringify({ sending: "json" }), // Optional: The body of the request (useful for POST, PUT, etc.).
+});
 
 // Starts the download process. Resolves to true if the download completes successfully, otherwise throws an error.
 downloader
