@@ -1,0 +1,45 @@
+{
+	"name": "@rabbit-company/downloader",
+	"version": "0.0.1",
+	"description": "Simple file downloader",
+	"main": "./module/downloader.js",
+	"type": "module",
+	"homepage": "https://github.com/Rabbit-Company/Downloader-JS",
+	"funding": "https://rabbit-company.com/donation",
+	"author": "Rabbit Company <info@rabbit-company.com>",
+	"license": "MIT",
+	"private": false,
+	"scripts": {
+		"build": "bun run build.ts",
+		"test": "bun test --timeout 3600000"
+	},
+	"files": [
+		"module/downloader.js",
+		"module/downloader.d.ts"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Rabbit-Company/Downloader-JS.git"
+	},
+	"contributors": [
+		"Rabbit Company <info@rabbit-company.com> (https://github.com/Rabbit-Company)"
+	],
+	"bugs": {
+		"url": "https://github.com/Rabbit-Company/Downloader-JS/issues",
+		"email": "info@rabbit-company.com"
+	},
+	"keywords": [
+		"file",
+		"downloader",
+		"S3"
+	],
+	"devDependencies": {
+		"@rabbit-company/logger": "npm:@jsr/rabbit-company__logger@4.0.1",
+		"@types/bun": "^1.2.0",
+		"bun-plugin-dts": "^0.3.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.7.3"
+	},
+	"dependencies": {}
+}
