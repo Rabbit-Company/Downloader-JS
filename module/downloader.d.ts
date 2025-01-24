@@ -1,27 +1,77 @@
 /**
+ * HTTP Methods enum.
+ */
+export declare enum HttpMethod {
+	GET = "GET",
+	POST = "POST",
+	PUT = "PUT",
+	DELETE = "DELETE",
+	PATCH = "PATCH",
+	HEAD = "HEAD",
+	OPTIONS = "OPTIONS"
+}
+/**
+ * Configuration options for the Downloader class.
+ */
+export interface DownloaderConfig {
+	/**
+	 * The URL of the file to download.
+	 */
+	url: string;
+	/**
+	 * The local file path where the downloaded file will be saved.
+	 */
+	destinationPath: string;
+	/**
+	 * HTTP method to use for the download request. Defaults to "GET".
+	 */
+	method?: HttpMethod;
+	/**
+	 * Custom headers for the download request, including optional authorization and other headers.
+	 * This can be used to pass authentication tokens, custom user agents, or other HTTP headers.
+	 */
+	headers?: Record<string, string>;
+	/**
+	 * The body of the request, which can be used for methods like POST, PUT, etc.
+	 * This allows sending data in the request body, such as JSON payloads, form data, or other types of content.
+	 */
+	body?: any;
+	/**
+	 * Size of each download chunk in bytes. Defaults to 10 MB.
+	 */
+	chunkSize?: number;
+	/**
+	 * Time in milliseconds to wait before retrying a failed request. Defaults to 5000 ms.
+	 */
+	retryTimeout?: number;
+	/**
+	 * Maximum number of retries for failed requests. Defaults to 120 retries.
+	 */
+	maxRetries?: number;
+}
+/**
  * A class to handle large file downloads with support for various runtimes
  * (Node.js, Deno, Bun) and progress tracking.
  */
 export declare class Downloader {
 	private url;
 	private destinationPath;
-	private totalSize;
-	private downloadedSize;
+	private method;
+	private headers;
+	private body;
 	private chunkSize;
 	private retryTimeout;
 	private maxRetries;
+	private totalSize;
+	private downloadedSize;
 	private lastTime;
 	private lastDownloadedSize;
 	private progressCallback?;
 	/**
-	 * Creates a new LargeFileDownloader instance.
-	 * @param {string} url - The URL of the file to download.
-	 * @param {string} [destinationPath] - The local file path where the downloaded file will be saved.
-	 * @param {number} [chunkSize=10 * 1024 * 1024] - The size of each chunk to download (in bytes).
-	 * @param {number} [retryTimeout=5000] - The timeout duration (in ms) to wait before retrying failed requests.
-	 * @param {number} [maxRetries=120] - The maximum number of retry attempts on failure.
+	 * Creates a new instance of the Downloader class.
+	 * @param {DownloaderConfig} config - Configuration options for the downloader.
 	 */
-	constructor(url: string, destinationPath: string, chunkSize?: number, retryTimeout?: number, maxRetries?: number);
+	constructor(config: DownloaderConfig);
 	/**
 	 * Starts the download process.
 	 * @param {(progress: number, speed: number) => void} [progressCallback] - Callback with progress and download speed (in bytes per second).

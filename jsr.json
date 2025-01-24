@@ -1,8 +1,8 @@
 {
 	"name": "@rabbit-company/downloader",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"exports": "./src/downloader.ts",
 	"publish": {
-		"include": ["LICENSE", "README.md", "src/downloader.ts"]
+		"include": ["LICENSE", "README.md", "src/downloader.ts", "src/types.ts"]
 	}
 }

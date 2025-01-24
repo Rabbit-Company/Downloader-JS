@@ -2,23 +2,42 @@
 import fs from "node:fs/promises";
 import nodePath from "node:path";
 
+// src/types.ts
+var HttpMethod;
+((HttpMethod2) => {
+  HttpMethod2["GET"] = "GET";
+  HttpMethod2["POST"] = "POST";
+  HttpMethod2["PUT"] = "PUT";
+  HttpMethod2["DELETE"] = "DELETE";
+  HttpMethod2["PATCH"] = "PATCH";
+  HttpMethod2["HEAD"] = "HEAD";
+  HttpMethod2["OPTIONS"] = "OPTIONS";
+})(HttpMethod ||= {});
+
+// src/downloader.ts
 class Downloader {
   url;
   destinationPath;
-  totalSize = 0;
-  downloadedSize = 0;
+  method;
+  headers;
+  body;
   chunkSize;
   retryTimeout;
   maxRetries;
+  totalSize = 0;
+  downloadedSize = 0;
   lastTime = Date.now();
   lastDownloadedSize = 0;
   progressCallback;
-  constructor(url, destinationPath, chunkSize = 10 * 1024 * 1024, retryTimeout = 5000, maxRetries = 120) {
-    this.url = url;
-    this.destinationPath = destinationPath;
-    this.chunkSize = chunkSize;
-    this.retryTimeout = retryTimeout;
-    this.maxRetries = maxRetries;
+  constructor(config) {
+    this.url = config.url;
+    this.destinationPath = config.destinationPath;
+    this.method = config.method || "GET" /* GET */;
+    this.headers = config.headers || {};
+    this.body = config.body;
+    this.chunkSize = config.chunkSize || 10 * 1024 * 1024;
+    this.retryTimeout = config.retryTimeout || 5000;
+    this.maxRetries = config.maxRetries || 120;
   }
   async download(progressCallback) {
     this.progressCallback = progressCallback;
@@ -28,10 +47,12 @@ class Downloader {
     await this.deleteFile(this.destinationPath);
     const file = await this.openFile(this.destinationPath);
     try {
+      const headers = this.headers;
+      headers["Range"] = "bytes=0-0";
       const response = await fetch(this.url, {
-        headers: {
-          Range: `bytes=0-0`
-        }
+        method: this.method,
+        headers,
+        body: this.body
       });
       this.totalSize = parseInt(response.headers.get("content-range")?.split("/")[1] || "0");
       if (!this.totalSize) {
@@ -45,10 +66,12 @@ class Downloader {
         let success = false;
         while (!success && retries < this.maxRetries) {
           try {
+            const chunkHeaders = this.headers;
+            chunkHeaders["Range"] = `bytes=${this.downloadedSize}-${end}`;
             response2 = await fetch(this.url, {
-              headers: {
-                Range: `bytes=${this.downloadedSize}-${end}`
-              }
+              method: this.method,
+              headers: chunkHeaders,
+              body: this.body
             });
             if (!response2.ok) {
               throw new Error(`Failed to download chunk, status code: ${response2.status}`);
@@ -172,5 +195,6 @@ class Downloader {
   }
 }
 export {
+  HttpMethod,
   Downloader
 };

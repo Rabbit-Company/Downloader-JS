@@ -1,32 +1,39 @@
 import fs from "node:fs/promises";
 import nodePath from "node:path";
+import { HttpMethod, type DownloaderConfig } from "./types";
 
 /**
  * A class to handle large file downloads with support for various runtimes
  * (Node.js, Deno, Bun) and progress tracking.
  */
 class Downloader {
-	private totalSize: number = 0;
-	private downloadedSize: number = 0;
+	private url: string;
+	private destinationPath: string;
+	private method: HttpMethod;
+	private headers: Record<string, string>;
+	private body: any;
 	private chunkSize: number;
 	private retryTimeout: number;
 	private maxRetries: number;
+	private totalSize: number = 0;
+	private downloadedSize: number = 0;
 	private lastTime: number = Date.now();
 	private lastDownloadedSize: number = 0;
 	private progressCallback?: (progress: number, speed: number) => void;
 
 	/**
-	 * Creates a new LargeFileDownloader instance.
-	 * @param {string} url - The URL of the file to download.
-	 * @param {string} [destinationPath] - The local file path where the downloaded file will be saved.
-	 * @param {number} [chunkSize=10 * 1024 * 1024] - The size of each chunk to download (in bytes).
-	 * @param {number} [retryTimeout=5000] - The timeout duration (in ms) to wait before retrying failed requests.
-	 * @param {number} [maxRetries=120] - The maximum number of retry attempts on failure.
+	 * Creates a new instance of the Downloader class.
+	 * @param {DownloaderConfig} config - Configuration options for the downloader.
 	 */
-	constructor(private url: string, private destinationPath: string, chunkSize: number = 10 * 1024 * 1024, retryTimeout = 5000, maxRetries = 120) {
-		this.chunkSize = chunkSize;
-		this.retryTimeout = retryTimeout;
-		this.maxRetries = maxRetries;
+	constructor(config: DownloaderConfig) {
+		this.url = config.url;
+		this.destinationPath = config.destinationPath;
+		this.method = config.method || HttpMethod.GET;
+		this.headers = config.headers || {};
+		this.body = config.body;
+		this.chunkSize = config.chunkSize || 10 * 1024 * 1024;
+		this.retryTimeout = config.retryTimeout || 5000;
+		this.maxRetries = config.maxRetries || 120;
 	}
 
 	/**
@@ -46,10 +53,13 @@ class Downloader {
 		const file = await this.openFile(this.destinationPath);
 
 		try {
+			const headers = this.headers;
+			headers["Range"] = "bytes=0-0";
+
 			const response = await fetch(this.url, {
-				headers: {
-					Range: `bytes=0-0`,
-				},
+				method: this.method,
+				headers,
+				body: this.body,
 			});
 
 			this.totalSize = parseInt(response.headers.get("content-range")?.split("/")[1] || "0");
@@ -68,10 +78,13 @@ class Downloader {
 
 				while (!success && retries < this.maxRetries) {
 					try {
+						const chunkHeaders = this.headers;
+						chunkHeaders["Range"] = `bytes=${this.downloadedSize}-${end}`;
+
 						response = await fetch(this.url, {
-							headers: {
-								Range: `bytes=${this.downloadedSize}-${end}`,
-							},
+							method: this.method,
+							headers: chunkHeaders,
+							body: this.body,
 						});
 
 						if (!response.ok) {
@@ -245,4 +258,4 @@ class Downloader {
 	}
 }
 
-export { Downloader };
+export { Downloader, type DownloaderConfig, HttpMethod };
