@@ -126,13 +126,17 @@ class Downloader {
           reader.releaseLock?.();
         }
       }
-    } catch {
-      throw new Error("Request to server failed");
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(`Request to server failed: ${err.message}`);
+      } else {
+        throw new Error(`Request to server failed: ${err}`);
+      }
     }
     const getFileSize = await this.getFileStats(this.destinationPath);
     if (getFileSize?.size === this.totalSize)
       return true;
-    throw new Error("Downloaded file does not match requested one");
+    throw new Error(`Downloaded file (${getFileSize?.size} bytes) does not match requested one (${this.totalSize} bytes).`);
   }
   async openFile(path) {
     try {
