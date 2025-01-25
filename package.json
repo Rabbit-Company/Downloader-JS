@@ -1,6 +1,6 @@
 {
 	"name": "@rabbit-company/downloader",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Simple file downloader",
 	"main": "./module/downloader.js",
 	"type": "module",
